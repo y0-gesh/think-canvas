@@ -37,7 +37,7 @@ export default function RootLayout({
         "font-sans",
       )}
     >
-      <body className="min-h-full flex flex-col min-h-screenss">{children}</body>
+      <body className="min-h-screen size-full flex flex-col">{children}</body>
     </html>
   );
 }
