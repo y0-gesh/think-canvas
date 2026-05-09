@@ -117,6 +117,333 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ═══════════════════════════════════════════
+   ThinkNode — Custom Node Styles
+   ═══════════════════════════════════════════ */
+
+.think-node {
+  background: rgba(30, 30, 40, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 0 rgba(99, 102, 241, 0),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.think-node:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 0 rgba(99, 102, 241, 0),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.think-node--selected {
+  border-color: rgba(99, 102, 241, 0.6) !important;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(99, 102, 241, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+.think-node--dragover {
+  border-color: rgba(99, 102, 241, 0.8) !important;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 3px rgba(99, 102, 241, 0.4),
+    inset 0 0 20px rgba(99, 102, 241, 0.08) !important;
+}
+
+/* ── Header ── */
+.think-node__header {
+  padding: 10px 12px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: text;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.think-node__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.think-node__input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  outline: none;
+  font-family: inherit;
+}
+
+.think-node__input:focus {
+  border-color: rgba(99, 102, 241, 0.8);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* ── Content ── */
+.think-node__content {
+  flex: 1;
+  padding: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.think-node__dropzone {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin: 0;
+  min-height: 40px;
+  transition: border-color 0.2s;
+}
+
+.think-node--dragover .think-node__dropzone {
+  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.think-node__attachments {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.think-node__attachment-count {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 4px;
+}
+
+/* ── Handles ── */
+.think-handle {
+  width: 8px !important;
+  height: 8px !important;
+  background: rgba(99, 102, 241, 0.7) !important;
+  border: 2px solid rgba(30, 30, 40, 0.9) !important;
+  border-radius: 50% !important;
+  transition: all 0.15s ease !important;
+}
+
+.think-handle:hover {
+  background: rgba(99, 102, 241, 1) !important;
+  transform: scale(1.3);
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+}
+
+/* ═══════════════════════════════════════════
+   3D Viewer
+   ═══════════════════════════════════════════ */
+
+.model-3d-viewer {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.model-3d-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
+   File Preview
+   ═══════════════════════════════════════════ */
+
+.file-preview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.file-preview--image {
+  position: relative;
+}
+
+.file-preview__img {
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.file-preview__video {
+  width: 100%;
+  max-height: 200px;
+  border-radius: 6px;
+  background: black;
+}
+
+.file-preview__name {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 4px 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-preview--generic {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.file-preview__icon-wrap {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b5cf6;
+}
+
+.file-preview__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-preview__size {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* ═══════════════════════════════════════════
+   Save Indicator
+   ═══════════════════════════════════════════ */
+
+.save-indicator {
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(30, 30, 40, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.save-indicator__saving {
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.save-indicator__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+  animation: pulse-save 1s infinite;
+}
+
+.save-indicator__saved {
+  color: #22c55e;
+}
+
+@keyframes pulse-save {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ═══════════════════════════════════════════
+   ReactFlow Overrides
+   ═══════════════════════════════════════════ */
+
+.think-canvas .react-flow__pane {
+  background: #0f0f17 !important;
+}
+
+.think-canvas .react-flow__edge-path {
+  stroke: rgba(99, 102, 241, 0.4);
+  stroke-width: 2;
+}
+
+.think-canvas .react-flow__edge:hover .react-flow__edge-path {
+  stroke: rgba(99, 102, 241, 0.8);
+}
+
+.think-canvas .react-flow__connection-line {
+  stroke: rgba(99, 102, 241, 0.6);
+  stroke-width: 2;
+  stroke-dasharray: 5 5;
+}
+
+.think-controls .react-flow__controls-button {
+  background: rgba(30, 30, 40, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  border-radius: 6px !important;
+}
+
+.think-controls .react-flow__controls-button:hover {
+  background: rgba(50, 50, 60, 0.9) !important;
+  color: white !important;
+}
+
+.think-controls .react-flow__controls-button svg {
+  fill: currentColor !important;
+}
+
+.think-minimap {
+  background: rgba(20, 20, 30, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px !important;
+}
+
+/* ═══════════════════════════════════════════
+   Scrollbar
+   ═══════════════════════════════════════════ */
+
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
