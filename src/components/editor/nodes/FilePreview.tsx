@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { FileText, Film, ImageIcon, File } from 'lucide-react';
+import { getFileUrl } from '@/lib/utils';
 import type { FileAttachment } from './ThinkNode';
 
 interface FilePreviewProps {
@@ -10,11 +11,13 @@ interface FilePreviewProps {
 }
 
 export const FilePreview = ({ attachment, type }: FilePreviewProps) => {
+  const resolvedUrl = getFileUrl(attachment.url);
+
   if (type === 'image') {
     return (
       <div className="file-preview file-preview--image">
         <img
-          src={attachment.url}
+          src={resolvedUrl}
           alt={attachment.name}
           className="file-preview__img"
           draggable={false}
@@ -28,7 +31,7 @@ export const FilePreview = ({ attachment, type }: FilePreviewProps) => {
     return (
       <div className="file-preview file-preview--video">
         <video
-          src={attachment.url}
+          src={resolvedUrl}
           controls
           className="file-preview__video"
           onPointerDown={(e) => e.stopPropagation()}

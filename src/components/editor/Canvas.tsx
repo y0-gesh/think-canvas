@@ -123,13 +123,6 @@ const Flow = () => {
               color="rgba(255,255,255,0.05)"
             />
             <Controls className="think-controls" />
-            <MiniMap
-              className="think-minimap"
-              nodeColor="#6366f1"
-              maskColor="rgba(0,0,0,0.7)"
-              pannable
-              zoomable
-            />
             <Panel position="top-right">
               <Toolbar />
             </Panel>

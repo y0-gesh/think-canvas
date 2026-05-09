@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { 
   Type, 
@@ -26,6 +26,12 @@ const nodeInfo: Record<string, { label: string; icon: any }> = {
 };
 
 export const DraggableNode = ({ type }: DraggableNodeProps) => {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const info = nodeInfo[type] || { label: type, icon: Box };
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `sidebar-${type}`,
@@ -35,6 +41,8 @@ export const DraggableNode = ({ type }: DraggableNodeProps) => {
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
   } : undefined;
+
+  if (!mounted) return null;
 
   return (
     <div

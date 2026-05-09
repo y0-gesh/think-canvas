@@ -43,6 +43,27 @@ const LoadingFallback = () => (
   </mesh>
 );
 
+class ErrorBoundary extends React.Component<{ fallback: React.ReactNode; children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
+
+const ErrorFallback = () => (
+  <mesh>
+    <boxGeometry args={[0.5, 0.5, 0.5]} />
+    <meshStandardMaterial color="#ef4444" wireframe />
+  </mesh>
+);
+
 export const Model3DViewer = ({ url, width, height }: Model3DViewerProps) => {
   return (
     <div
@@ -57,10 +78,12 @@ export const Model3DViewer = ({ url, width, height }: Model3DViewerProps) => {
       >
         <ambientLight intensity={0.6} />
         <directionalLight position={[5, 5, 5]} intensity={0.8} />
-        <Suspense fallback={<LoadingFallback />}>
-          <Model url={url} />
-          <Environment preset="studio" />
-        </Suspense>
+        <ErrorBoundary fallback={<ErrorFallback />}>
+          <Suspense fallback={<LoadingFallback />}>
+            <Model url={url} />
+            <Environment preset="studio" />
+          </Suspense>
+        </ErrorBoundary>
         <OrbitControls
           enablePan={false}
           enableZoom={true}

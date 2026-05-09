@@ -9,7 +9,7 @@ import {
   type Node,
 } from '@xyflow/react';
 import { X, GripVertical } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getFileUrl } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
 import { Model3DViewer } from './Model3DViewer';
 import { FilePreview } from './FilePreview';
@@ -99,7 +99,7 @@ export const ThinkNode = ({ id, data, selected }: NodeProps<ThinkNodeType>) => {
   }, []);
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
+    async (e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
       setIsDragOver(false);
@@ -107,16 +107,44 @@ export const ThinkNode = ({ id, data, selected }: NodeProps<ThinkNodeType>) => {
       const files = Array.from(e.dataTransfer.files);
       if (files.length === 0) return;
 
-      files.forEach((file) => {
-        const attachment: FileAttachment = {
-          id: crypto.randomUUID(),
-          name: file.name,
-          type: file.type || 'application/octet-stream',
-          url: URL.createObjectURL(file),
-          size: file.size,
-        };
-        attachFileToNode(id, attachment);
-      });
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+
+      for (const file of files) {
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          const res = await fetch(`${API_BASE}/api/upload?nodeId=${id}`, {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!res.ok) throw new Error('Upload failed');
+          
+          const uploadedFile = await res.json();
+          
+          const attachment: FileAttachment = {
+            id: uploadedFile.id,
+            name: uploadedFile.filename,
+            type: uploadedFile.mimetype,
+            url: uploadedFile.url, // This is "/api/files/:id"
+            size: uploadedFile.size,
+          };
+          
+          attachFileToNode(id, attachment);
+        } catch (err) {
+          console.error('File upload failed:', err);
+          // Fallback to blob URL if upload fails (though it won't persist)
+          const attachment: FileAttachment = {
+            id: crypto.randomUUID(),
+            name: file.name,
+            type: file.type || 'application/octet-stream',
+            url: URL.createObjectURL(file),
+            size: file.size,
+          };
+          attachFileToNode(id, attachment);
+        }
+      }
     },
     [id, attachFileToNode],
   );
@@ -192,7 +220,7 @@ export const ThinkNode = ({ id, data, selected }: NodeProps<ThinkNodeType>) => {
           <div className="think-node__attachments">
             {is3D && primaryAttachment ? (
               <Model3DViewer
-                url={primaryAttachment.url}
+                url={getFileUrl(primaryAttachment.url)}
                 width={width - 16}
                 height={Math.max(height - 60, 100)}
               />
