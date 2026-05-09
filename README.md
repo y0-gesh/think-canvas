@@ -1,320 +1,244 @@
 # ThinkCanvas
 
-**ThinkCanvas** is a graph-first node editor built for structured thinking, visual workflows, and extensible systems design.
-It prioritizes **graph logic over freeform drawing**, with a clear path toward evolving into a hybrid graph + canvas platform.
+**Graph-first node editor** with drag-and-drop file attachments, 3D model preview, and full database persistence.  
+Built with Next.js + React Flow + Fastify + PostgreSQL.
 
 ---
 
-## Overview
+## Prerequisites
 
-ThinkCanvas is not another whiteboard clone. It is designed as:
-
-* A **graph-based thinking system**
-* A **node-driven editor for structured workflows**
-* A **developer-friendly, extensible platform**
-
-It intentionally avoids trying to replicate tools like Excalidraw or design suites. Instead, it focuses on **logic, relationships, and systems modeling**.
+| Tool | Version | Install |
+|------|---------|---------|
+| **Node.js** | ≥ 18 | [nodejs.org](https://nodejs.org) |
+| **PostgreSQL** | ≥ 14 | [postgresql.org](https://www.postgresql.org/download/) |
+| **Redis** *(optional)* | ≥ 7 | [redis.io](https://redis.io/download) — not required for current features |
 
 ---
 
-## Product Scope
+## Quick Start
 
-### What it is
+### 1. Clone & install deps
 
-* Graph-first node editor
-* Visual system builder
-* Extensible architecture for custom node types
+```bash
+git clone <repo-url> think-canvas
+cd think-canvas
 
-### What it is NOT
+# Frontend
+cd tc-frontend
+npm install
 
-* Not a Figma alternative
-* Not a pixel-perfect design tool
-* Not a pure drawing whiteboard
+# Backend
+cd ../tc-backend
+npm install
+```
 
-### Future Direction
+### 2. Configure environment
 
-* Hybrid **graph + canvas system**
-* Visual + logical workflows combined
+**Backend** (`tc-backend/.env`):
+
+```env
+PORT=3002
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/thinkcanvas
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+```
+
+**Frontend** (`tc-frontend/.env.local`):
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3002
+```
+
+> Change `postgres:postgres` to your actual PostgreSQL username:password.
+
+### 3. Create the database
+
+```bash
+# Connect to PostgreSQL and create the database
+psql -U postgres -c "CREATE DATABASE thinkcanvas;"
+```
+
+### 4. Run Prisma migration
+
+```bash
+cd tc-backend
+npx prisma migrate dev --name init
+npx prisma generate
+```
+
+### 5. Start everything
+
+```bash
+# Option A: Use the run script (see below)
+./run.sh
+
+# Option B: Manual start (2 terminals)
+
+# Terminal 1 — Backend (port 3002)
+cd tc-backend
+npm run dev
+
+# Terminal 2 — Frontend (port 3000)
+cd tc-frontend
+npm run dev
+```
+
+### 6. Open the app
+
+Navigate to **http://localhost:3000**
 
 ---
 
-## Architecture
-
-### Monorepo Structure
+## Project Structure
 
 ```
-apps/
-  eigenstudio-editor     # Next.js editor app
-
-packages/
-  ui/                    # Shared UI (shadcn-based)
-  editor-core/           # Graph + canvas logic
-  collaboration/         # Yjs + WebSocket layer
-  schema/                # Zod schemas
-
-services/
-  api                    # Fastify backend
-  realtime               # WebSocket server
+think-canvas/
+├── tc-frontend/              # Next.js 16 (App Router)
+│   ├── src/
+│   │   ├── app/              # Pages & layout
+│   │   ├── components/
+│   │   │   └── editor/
+│   │   │       ├── Canvas.tsx          # ReactFlow wrapper
+│   │   │       ├── Sidebar.tsx         # Node palette
+│   │   │       ├── Toolbar.tsx         # Add/Delete controls
+│   │   │       ├── DraggableNode.tsx   # Sidebar draggable items
+│   │   │       └── nodes/
+│   │   │           ├── ThinkNode.tsx      # Custom node (edit, resize, file drop)
+│   │   │           ├── Model3DViewer.tsx  # Three.js GLB/GLTF viewer
+│   │   │           └── FilePreview.tsx    # Image/video/file preview
+│   │   ├── store/
+│   │   │   └── useStore.ts   # Zustand store (state + auto-save)
+│   │   ├── styles/
+│   │   │   └── globals.css   # Theme + node styles
+│   │   └── vendors/ui/       # shadcn components
+│   └── .env.local
+│
+├── tc-backend/               # Fastify API
+│   ├── src/
+│   │   ├── app.ts            # Server entry (CORS, plugins, routes)
+│   │   ├── plugins/
+│   │   │   ├── prisma.ts     # Prisma client (PG adapter)
+│   │   │   └── redis.ts      # Redis (disabled by default)
+│   │   └── routes/
+│   │       ├── canvas.ts     # CRUD: /api/canvas
+│   │       ├── upload.ts     # POST: /api/upload (multipart)
+│   │       ├── files.ts      # GET/DELETE: /api/files/:id
+│   │       ├── health.ts     # GET: /health
+│   │       └── ws.ts         # WebSocket echo
+│   ├── prisma/
+│   │   └── schema.prisma     # Canvas, Node, Edge, File models
+│   ├── uploads/              # Uploaded files stored here
+│   └── .env
+│
+├── docs/
+│   └── system-design.md
+├── run.sh                    # Start all services
+└── README.md                 # ← You are here
 ```
 
 ---
 
-## Frontend Architecture
+## Features
 
-### Editor Layering
+### Canvas (Obsidian-like graph editor)
+- **Create nodes** — double-click canvas or use toolbar
+- **Edit text** — double-click node label → inline edit → Enter to save
+- **Delete nodes** — hover → X button, or select + `Delete`/`Backspace` key
+- **Resize nodes** — drag bottom-right grip handle
+- **Connect nodes** — drag from source handle (bottom) to target handle (top)
+- **Move nodes** — drag anywhere on the node
+- **Zoom/Pan** — scroll wheel + drag on canvas
+- **Snap to grid** — 16px grid alignment
+- **MiniMap** — bottom-right overview
+- **Multi-select** — hold `Shift` + click
+
+### Drag & Drop Files
+- **Drag any file** from your OS file explorer onto a node
+- **GLB/GLTF** → renders interactive 3D model (orbit, zoom, auto-rotate)
+- **Images** (png, jpg, gif, webp, svg) → inline preview
+- **Video** (mp4, webm, mov) → embedded player with controls
+- **Other files** → icon + filename + size display
+
+### Persistence
+- **Auto-save** — every change debounced 1s → saves to PostgreSQL
+- **Save indicator** — "Saving..." → "✓ Saved" at bottom of canvas
+- **Load on mount** — canvas state restored from DB on page load
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Health check |
+| `GET` | `/api/canvas` | List all canvases |
+| `GET` | `/api/canvas/:id` | Get canvas with nodes + edges + files |
+| `POST` | `/api/canvas` | Create canvas (with nodes/edges) |
+| `PUT` | `/api/canvas/:id` | Update canvas (full replace) |
+| `DELETE` | `/api/canvas/:id` | Delete canvas (cascade) |
+| `POST` | `/api/upload?nodeId=` | Upload file (multipart, max 100MB) |
+| `GET` | `/api/files/:id` | Serve uploaded file |
+| `DELETE` | `/api/files/:id` | Delete file record |
+
+---
+
+## Database Schema
 
 ```
-/editor
-  /core
-    - React Flow wrapper
-    - Node registry
-    - Edge logic
-    - State adapters
-
-  /canvas (future)
-    - Drawing engine
-    - Tools (pen, shapes, text)
-
-  /features
-    - Undo/redo
-    - Copy/paste
-    - Zoom/pan
-    - Shortcuts
-
-  /store
-    - Zustand store
-    - Graph state
-    - UI state
-
-  /components
-    - NodeRenderer
-    - Toolbar
-    - Inspector Panel
+Canvas ──┬── Node[] ──── File[]
+         └── Edge[]
 ```
 
-### Key Principles
-
-* **React Flow is only a renderer**, not the source of truth
-* **Zustand manages all state**
-* Clear separation between:
-
-  * Graph logic
-  * UI state
-  * Rendering layer
+| Model | Key Fields |
+|-------|-----------|
+| **Canvas** | `id`, `name`, `createdAt`, `updatedAt` |
+| **Node** | `id`, `type`, `positionX/Y`, `width`, `height`, `data` (JSON) |
+| **Edge** | `id`, `source`, `target`, `type` |
+| **File** | `id`, `filename`, `mimetype`, `path`, `size`, `nodeId` |
 
 ---
 
 ## Tech Stack
 
-### Frontend
-
-* Next.js (App Router)
-* React Flow
-* Zustand
-* Immer
-* shadcn/ui
-* Tailwind CSS
-* dnd-kit
-
-### Backend
-
-* Node.js + Fastify
-* PostgreSQL
-* Prisma ORM
-* Redis
-* WebSocket (`ws`)
-
-### Realtime
-
-* Yjs
-* y-websocket
+| Layer | Tech |
+|-------|------|
+| Frontend | Next.js 16, React Flow, Zustand, Immer, Three.js (R3F), Tailwind, shadcn/ui, dnd-kit, Framer Motion |
+| Backend | Fastify, Prisma 7, PostgreSQL, `@fastify/multipart`, `@fastify/websocket` |
+| 3D | Three.js, `@react-three/fiber`, `@react-three/drei` |
 
 ---
 
-## Data Model
+## Environment Variables
 
-### Node
+### Backend (`tc-backend/.env`)
 
-```ts
-type Node = {
-  id: string
-  type: string
-  position: { x: number; y: number }
-  data: Record<string, any>
-}
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3002` | Backend server port |
+| `DATABASE_URL` | — | PostgreSQL connection string |
+| `REDIS_HOST` | `127.0.0.1` | Redis host (optional) |
+| `REDIS_PORT` | `6379` | Redis port (optional) |
 
-### Edge
+### Frontend (`tc-frontend/.env.local`)
 
-```ts
-type Edge = {
-  id: string
-  source: string
-  target: string
-  type: string
-}
-```
-
-### Document Strategy
-
-* Store full graph as JSON
-* Maintain version snapshots
-* Introduce diff-based updates later
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3002` | Backend API base URL |
 
 ---
 
-## Core System Patterns
+## Troubleshooting
 
-### Node Registry
-
-```ts
-const nodeRegistry = {
-  text: TextNode,
-  api: ApiNode,
-  condition: ConditionNode
-}
-```
-
-* No hardcoding in rendering layer
-* Fully extensible node system
-
----
-
-### State Management
-
-* Centralized Zustand store
-* React Flow acts as a **view layer only**
-
----
-
-### Undo / Redo
-
-* Snapshot-based initially
-* Can evolve into command pattern
-
----
-
-## Feature Roadmap
-
-### Phase 1 — MVP
-
-* Node creation
-* Edge connections
-* Drag & move
-* Zoom / pan
-* Save / load (JSON)
-
----
-
-### Phase 2
-
-* Undo / redo
-* Inspector panel
-* Keyboard shortcuts
-* Auto-layout (Dagre)
-
----
-
-### Phase 3
-
-* Real-time collaboration (Yjs)
-* Presence system
-* Multi-user sync
-
----
-
-### Phase 4
-
-* Drawing tools
-* Shapes & annotations
-* Export (PNG / SVG)
-
----
-
-## Execution Plan
-
-### Week 1
-
-* Setup Next.js
-* Integrate React Flow
-* Basic node + edge system
-* Zustand store
-
-### Week 2
-
-* Toolbar
-* Delete / duplicate
-* Save/load functionality
-
-### Week 3
-
-* Node registry
-* Inspector panel
-* Custom nodes
-
-### Week 4
-
-* Undo/redo
-* Shortcuts
-* Auto-layout
-
-### Week 5+
-
-* Collaboration
-* Backend persistence
-
----
-
-## Design Constraints (Non-Negotiable)
-
-* Do **not** mix UI and graph state
-* Do **not** hardcode node types
-* Avoid Redux (unnecessary complexity)
-* Avoid premature canvas implementation
-* Keep rendering layer replaceable
-
----
-
-## Why ThinkCanvas Exists
-
-Most tools optimize for **drawing**.
-ThinkCanvas optimizes for **thinking in systems**.
-
-If your goal is:
-
-* Modeling workflows
-* Building logic graphs
-* Structuring ideas visually
-
-Then ThinkCanvas is the correct abstraction.
-
----
-
-## Status
-
-Early-stage development (MVP in progress)
-
----
-
-## Contributing
-
-Contributions will be opened once the core architecture stabilizes.
-Initial focus is on building a **solid, extensible foundation**, not feature bloat.
+| Issue | Fix |
+|-------|-----|
+| Port 3000 in use | Next.js auto-picks next port (3001). Update `NEXT_PUBLIC_API_URL` if backend port changes |
+| Prisma `PrismaClientOptions` error | Run `npx prisma generate` in `tc-backend/` |
+| Redis timeout on startup | Safe to ignore — Redis plugin disabled by default |
+| `THREE.WARNING: Multiple instances` | Harmless warning, does not affect functionality |
+| CORS errors | Ensure backend CORS `origin` array includes your frontend port |
 
 ---
 
 ## License
 
-TBD (likely MIT for open-source adoption)
-
----
-
-## Final Note
-
-If this becomes just another visual editor, it fails.
-
-The goal is to build:
-
-> A system for thinking, not just drawing.
-
-Keep that constraint in mind while contributing or extending the platform.
+MIT

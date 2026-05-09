@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Canvas {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  nodes     Node[]
+  edges     Edge[]
+}
+
+model Node {
+  id        String  @id
+  type      String  @default("think")
+  positionX Float
+  positionY Float
+  width     Float   @default(220)
+  height    Float   @default(140)
+  data      Json
+  canvasId  String
+  canvas    Canvas  @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  files     File[]
+}
+
+model Edge {
+  id       String @id
+  source   String
+  target   String
+  type     String @default("default")
+  canvasId String
+  canvas   Canvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+}
+
+model File {
+  id        String   @id @default(cuid())
+  filename  String
+  mimetype  String
+  path      String
+  size      Int
+  nodeId    String?
+  node      Node?    @relation(fields: [nodeId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+}
